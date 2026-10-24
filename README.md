@@ -2,11 +2,11 @@
 
 <h1 align="center">omp-zoxide</h1>
 
-<p align="center"><strong>Jump anywhere with zoxide, without leaving omp</strong></p>
+<p align="center"><strong>Jump to zoxide matches without leaving omp</strong></p>
 
 <br />
 
-`/z <keywords>` resolves a zoxide match and moves the whole session there via the built-in `/move`.
+`/z <keywords>` moves the session to zoxide's best match via the built-in `/move`.
 
 ```text
 ❯ /z dotfiles
@@ -31,11 +31,11 @@ Restart omp after installing.
 
 ## Usage
 
-- `/z <keywords>` — zoxide's best match, then `/move`.
-- `/z` — opens omp's move overlay.
-- `Tab` after `/z ` — zoxide matches.
+- `/z <keywords>`: zoxide's best match, then `/move`.
+- `/z`: opens omp's move overlay.
+- `Tab` after `/z `: zoxide matches.
 
-TUI and RPC only; ACP input isn't intercepted yet. It never writes to the zoxide database, so only your shell's `cd` changes scores. If `pi-cmux` is also installed, its `/z` command is shadowed while this plugin owns the input.
+TUI and RPC only; ACP input isn't intercepted yet. It never writes to the zoxide database, so only your shell's `cd` changes scores. If `pi-cmux` is also installed, its `/z` command is shadowed by this one.
 
 ## Development
 

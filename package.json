@@ -1,7 +1,7 @@
 {
 	"name": "omp-zoxide",
 	"version": "0.1.0",
-	"description": "Jump to a zoxide match and move the omp session there",
+	"description": "Move the omp session to a zoxide match",
 	"type": "module",
 	"main": "src/zoxide.ts",
 	"license": "MIT",
