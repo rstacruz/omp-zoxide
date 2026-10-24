@@ -1,0 +1,35 @@
+{
+	"name": "omp-zoxide",
+	"version": "0.1.0",
+	"description": "Jump to a zoxide match and move the omp session there",
+	"type": "module",
+	"main": "src/zoxide.ts",
+	"license": "MIT",
+	"author": "Rico Sta. Cruz",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/rstacruz/omp-zoxide.git"
+	},
+	"homepage": "https://github.com/rstacruz/omp-zoxide#readme",
+	"bugs": {
+		"url": "https://github.com/rstacruz/omp-zoxide/issues"
+	},
+	"keywords": ["omp", "omp-plugin", "zoxide", "jump", "cwd"],
+	"engines": {
+		"bun": ">=1.4.0",
+		"omp": ">=18.12.0"
+	},
+	"scripts": {
+		"test": "bun test",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"check": "bun run typecheck && bun test"
+	},
+	"devDependencies": {
+		"@oh-my-pi/pi-coding-agent": "18.12.6",
+		"@types/bun": "^1.4.3",
+		"typescript": "6.0.3"
+	},
+	"omp": {
+		"extensions": ["./src/zoxide.ts"]
+	}
+}
