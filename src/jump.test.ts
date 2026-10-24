@@ -1,5 +1,13 @@
 import { describe, expect, test } from "bun:test";
-import { completions, firstLine, moveText, parseInvocation, queryTerms, stripOuterQuotes } from "./jump.ts";
+import {
+	completions,
+	expandTilde,
+	firstLine,
+	moveText,
+	parseInvocation,
+	queryTerms,
+	stripOuterQuotes,
+} from "./jump.ts";
 
 describe("parseInvocation", () => {
 	test("bare /z", () => {
@@ -61,6 +69,24 @@ describe("moveText", () => {
 	test("rejects empty and embedded quotes", () => {
 		expect(moveText("")).toBeUndefined();
 		expect(moveText('/home/rsc/a"b')).toBeUndefined();
+	});
+
+	test("RPC leaves the path unquoted", () => {
+		expect(moveText("/home/rsc/My Dir", "rpc")).toBe("/move /home/rsc/My Dir");
+		expect(moveText("/home/rsc/a", "interactive")).toBe('/move "/home/rsc/a"');
+		expect(moveText("/home/rsc/a", "extension")).toBe('/move "/home/rsc/a"');
+	});
+});
+
+describe("expandTilde", () => {
+	test("expands a leading tilde", () => {
+		expect(expandTilde("~/proj", "/home/rsc")).toBe("/home/rsc/proj");
+		expect(expandTilde("~", "/home/rsc")).toBe("/home/rsc");
+	});
+
+	test("leaves other paths alone", () => {
+		expect(expandTilde("/home/rsc/~/x", "/home/rsc")).toBe("/home/rsc/~/x");
+		expect(expandTilde("~bob", "/home/rsc")).toBe("~bob");
 	});
 });
 

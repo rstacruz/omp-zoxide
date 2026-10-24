@@ -1,9 +1,20 @@
 import { execFileSync } from "node:child_process";
 import { stat } from "node:fs/promises";
+import { homedir } from "node:os";
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
-import { completions, firstLine, moveText, parseInvocation, queryTerms, stripOuterQuotes } from "./jump.ts";
+import {
+	completions,
+	expandTilde,
+	firstLine,
+	moveText,
+	parseInvocation,
+	queryTerms,
+	stripOuterQuotes,
+} from "./jump.ts";
 
 const TIMEOUT_MS = 1500;
+
+type Resolution = { target: string } | { error: string };
 
 function zoxideCompletions(prefix: string) {
 	try {
@@ -27,16 +38,21 @@ async function isDirectory(path: string): Promise<boolean> {
 	}
 }
 
-async function query(pi: ExtensionAPI, raw: string, cwd: string): Promise<string | undefined> {
-	const result = await pi.exec("zoxide", ["query", "--", ...queryTerms(raw)], { cwd, timeout: TIMEOUT_MS });
-	if (result.code !== 0) return undefined;
-	const target = firstLine(result.stdout);
-	return target && (await isDirectory(target)) ? target : undefined;
+async function query(pi: ExtensionAPI, raw: string, cwd: string): Promise<Resolution> {
+	try {
+		const result = await pi.exec("zoxide", ["query", "--", ...queryTerms(raw)], { cwd, timeout: TIMEOUT_MS });
+		const target = result.code === 0 ? firstLine(result.stdout) : undefined;
+		if (target && (await isDirectory(target))) return { target };
+		return { error: `zoxide: no match for "${raw}"` };
+	} catch {
+		return { error: "zoxide is not installed or not in PATH" };
+	}
 }
 
-async function resolve(pi: ExtensionAPI, raw: string, cwd: string): Promise<string | undefined> {
-	const explicit = stripOuterQuotes(raw);
-	return (await isDirectory(explicit)) ? explicit : query(pi, raw, cwd);
+async function resolve(pi: ExtensionAPI, raw: string, cwd: string): Promise<Resolution> {
+	const explicit = expandTilde(stripOuterQuotes(raw), homedir());
+	if (await isDirectory(explicit)) return { target: explicit };
+	return query(pi, raw, cwd);
 }
 
 export default function (pi: ExtensionAPI) {
@@ -49,14 +65,16 @@ export default function (pi: ExtensionAPI) {
 				ctx.ui.notify("Usage: /z <keywords>", "warning");
 				return;
 			}
-			const target = await resolve(pi, raw, ctx.cwd);
-			if (!target) {
-				ctx.ui.notify(`zoxide: no match for "${raw}"`, "error");
+			const resolution = await resolve(pi, raw, ctx.cwd);
+			if ("error" in resolution) {
+				ctx.ui.notify(resolution.error, "error");
 				return;
 			}
-			const text = moveText(target);
+			const text = moveText(resolution.target);
 			ctx.ui.notify(
-				text ? `In the TUI this runs: ${text}` : `Cannot /move to ${target}: path contains a double quote`,
+				text
+					? `In the TUI this runs: ${text}`
+					: `Cannot /move to ${resolution.target}: path contains a double quote`,
 				text ? "info" : "error",
 			);
 		},
@@ -67,17 +85,18 @@ export default function (pi: ExtensionAPI) {
 		if (raw === undefined) return;
 		if (!raw) return { text: "/move" };
 
-		const target = await resolve(pi, raw, ctx.cwd);
-		if (!target) {
-			ctx.ui.notify(`zoxide: no match for "${raw}"`, "error");
+		const resolution = await resolve(pi, raw, ctx.cwd);
+		if ("error" in resolution) {
+			ctx.ui.notify(resolution.error, "error");
 			return { handled: true };
 		}
+		const { target } = resolution;
 		if (target === ctx.cwd) {
 			ctx.ui.notify(`Already in ${target}`, "info");
 			return { handled: true };
 		}
 
-		const text = moveText(target);
+		const text = moveText(target, event.source);
 		if (!text) {
 			ctx.ui.notify(`Cannot /move to ${target}: path contains a double quote`, "error");
 			return { handled: true };

@@ -29,10 +29,19 @@ export function firstLine(stdout: string): string | undefined {
 		.find(Boolean);
 }
 
-export function moveText(target: string): string | undefined {
+export function moveText(
+	target: string,
+	source: "interactive" | "rpc" | "extension" = "interactive",
+) {
 	const trimmed = target.trim();
 	if (!trimmed || trimmed.includes('"')) return undefined;
-	return `/move "${trimmed}"`;
+	return source === "rpc" ? `/move ${trimmed}` : `/move "${trimmed}"`;
+}
+
+export function expandTilde(raw: string, home: string): string {
+	if (raw === "~") return home;
+	if (raw.startsWith("~/") || raw.startsWith("~\\")) return home + raw.slice(1);
+	return raw;
 }
 
 export function completions(stdout: string, limit = 20) {
