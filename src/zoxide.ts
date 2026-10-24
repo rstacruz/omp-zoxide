@@ -40,7 +40,6 @@ async function resolve(pi: ExtensionAPI, raw: string, cwd: string): Promise<stri
 }
 
 export default function (pi: ExtensionAPI) {
-	// Discoverability + completions; the input hook owns /z in TUI and RPC.
 	pi.registerCommand("z", {
 		description: "Jump to a zoxide match (runs /move)",
 		getArgumentCompletions: zoxideCompletions,

@@ -5,19 +5,21 @@ export function parseInvocation(text: string): string | undefined {
 	return match ? (match[1] ?? "").trim() : undefined;
 }
 
+function isQuoted(raw: string): boolean {
+	const trimmed = raw.trim();
+	return trimmed.length >= 2 && trimmed.startsWith('"') && trimmed.endsWith('"');
+}
+
 export function stripOuterQuotes(raw: string): string {
 	const trimmed = raw.trim();
-	return trimmed.length >= 2 && trimmed.startsWith('"') && trimmed.endsWith('"')
-		? trimmed.slice(1, -1)
-		: trimmed;
+	return isQuoted(trimmed) ? trimmed.slice(1, -1) : trimmed;
 }
 
 export function queryTerms(raw: string): string[] {
 	const trimmed = raw.trim();
-	const unquoted = stripOuterQuotes(trimmed);
-	// A wholly quoted path is one term even when it contains spaces.
-	if (unquoted !== trimmed) return unquoted ? [unquoted] : [];
-	return trimmed.split(/\s+/).filter(Boolean);
+	if (!isQuoted(trimmed)) return trimmed.split(/\s+/).filter(Boolean);
+	const inner = stripOuterQuotes(trimmed);
+	return inner ? [inner] : [];
 }
 
 export function firstLine(stdout: string): string | undefined {

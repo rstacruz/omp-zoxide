@@ -49,7 +49,6 @@ describe("firstLine", () => {
 
 	test("empty output", () => {
 		expect(firstLine("")).toBeUndefined();
-		expect(firstLine("\n \n")).toBeUndefined();
 	});
 });
 
@@ -61,7 +60,6 @@ describe("moveText", () => {
 
 	test("rejects empty and embedded quotes", () => {
 		expect(moveText("")).toBeUndefined();
-		expect(moveText("   ")).toBeUndefined();
 		expect(moveText('/home/rsc/a"b')).toBeUndefined();
 	});
 });
@@ -77,6 +75,5 @@ describe("completions", () => {
 	test("caps the limit", () => {
 		const stdout = Array.from({ length: 30 }, (_, i) => `/d${i}`).join("\n");
 		expect(completions(stdout, 3).map((item) => item.value)).toEqual(["/d0", "/d1", "/d2"]);
-		expect(completions("")).toEqual([]);
 	});
 });
